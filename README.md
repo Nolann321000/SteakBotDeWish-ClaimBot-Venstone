@@ -2,6 +2,12 @@
 
 Bot Discord en Node.js qui synchronise les claims de la map Venstone, permet de les consulter et suit les unclaims. Il peut aussi envoyer des alertes privées, conserver un historique et créer des sauvegardes JSON.
 
+## Avertissement
+
+Depuis mon bannissement le 04/11/2026, il semblerait que la modération soit partie en panique totale et que la map ne mette plus à jour les claims. Donc, pour le moment, le bot ne peut pas détecter les unclaims. Cependant, l'ensemble de l'historique est disponible sur ce dépôt Git (environ 4 à 5 mois de données). Lorsque la map commencera à refonctionner, je ferai un patch pour fix le bot et, si je n'ai pas la flemme, peut-être ajouter de nouvelles fonctionnalités. Sur ce, bisous les Venstoniens et surtout coucou le staff :)
+
+Ps : Oui la description est crée par chat gpt, j'avais la flemme :P
+
 ## Sommaire
 
 - [Prérequis](#prérequis)
