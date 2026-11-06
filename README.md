@@ -1,4 +1,4 @@
-# SteakBotDeWish
+# SteakBotDeWish | ClaimBot Venstone
 
 Bot Discord en Node.js qui synchronise les claims de la map Venstone, permet de les consulter et suit les unclaims. Il peut aussi envoyer des alertes privées, conserver un historique et créer des sauvegardes JSON.
 
