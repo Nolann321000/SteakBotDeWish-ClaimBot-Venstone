@@ -32,9 +32,9 @@ Ps : Oui la description est crée par chat gpt, j'avais la flemme :P
 Clone le dépôt, puis installe les dépendances à la racine du projet :
 
 ```bash
-git clone <URL_DU_DEPOT>
+git clone https://github.com/Nolann321000/SteakBotDeWish-ClaimBot-Venstone
 cd SteakBotDeWish
-npm ci
+npm install
 ```
 
 Le projet déclare également Yarn comme gestionnaire de paquets. Si tu utilises Yarn, installe les dépendances avec `yarn install` et démarre ensuite le bot avec `yarn start`.
