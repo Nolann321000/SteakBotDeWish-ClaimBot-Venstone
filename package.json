@@ -1,0 +1,19 @@
+{
+  "name": "steakbotdewish",
+  "version": "0.1.0",
+  "description": "Un bot Discord simple créé avec discord.js",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Nolann321000",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.0",
+    "discord.js": "^14.14.1",
+    "dotenv": "^16.3.1",
+    "socks-proxy-agent": "^10.1.0"
+  },
+  "packageManager": "yarn@1.22.22"
+}

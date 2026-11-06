@@ -1,0 +1,43 @@
+{
+  "authorizedUsers": [],
+  "usersNotifiedForUnclaim": [],
+  "usersNotifiedForAccountChanges": [],
+
+  "blacklistedGuilds": ["1091707271253336185"],
+
+  "enableCommandClaimList": true,
+  "enableCommandClaimRefresh": false,
+  "enableCommandCheckUnclaim": true,
+  "enableDebugTools": false,
+  "enableCommandStats": true,
+  
+  "debugConsoleDurationMinutes": 15,
+  "enableTor": false,
+  "enableAutoClaimRefresh": true,
+  "enableUnclaimAlerts": true,
+  "checkAccountChange": true,
+  "enableMessageCleanup": true,
+  "enableBackups": true,
+  "enableUnclaimLogs": true,
+  "enableIpLogs": true,
+  "makeSmallUnclaimSilent": true,
+
+  "autoClaimRefreshCooldown": 5,
+  "maxLinkPerEmbed": 30,
+  "smallUnclaimThreshold": 5,
+  "maxRefreshCycleCountBeforeRenew": 12,
+
+  "mapMarkersUrl": "https://map.venstone.xyz/tiles/minecraft_overworld/markers.json",
+  "unclaimLogsFileName": "unclaim.logs",
+  "ipLogsFileName": "ip.logs",
+  "logsFolderName": "logs",
+
+  "logsFolderPath": "./logs",
+  "backupsFolderPath": "./backups",
+  "mapMarkersFilePath": "./resources/markers.json",
+  "remindersFilePath": "./resources/reminders.json",
+  "torProxyUrl": "socks5h://127.0.0.1:9050",
+  "torControlHost": "127.0.0.1",
+  "torControlPort": 9051,
+  "unclaimHistoryFilePath": "./resources/unclaimHistory.json"
+}

@@ -1,0 +1,243 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SteakBot Debug Console</title>
+<style>
+:root {
+	color-scheme: dark;
+	--bg: #111312;
+	--panel: #191d1b;
+	--line: #343c37;
+	--text: #e5eee8;
+	--muted: #9ba9a0;
+	--accent: #8bd49c;
+	--error: #ff8c82;
+}
+
+* { box-sizing: border-box; }
+body {
+	margin: 0;
+	background: var(--bg);
+	color: var(--text);
+	font: 14px/1.5 Consolas, "Cascadia Mono", monospace;
+}
+main {
+	width: min(1600px, 100%);
+	min-height: 100vh;
+	margin: auto;
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+}
+header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	border-bottom: 1px solid var(--line);
+	padding: 4px 0 16px;
+}
+h1 { margin: 0; font-size: 16px; font-weight: 600; }
+.status { color: var(--accent); white-space: nowrap; }
+.status.expired { color: var(--error); }
+#workspace {
+	display: flex;
+	flex: 1;
+	min-height: 78vh;
+}
+.panel {
+	flex: 1;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	background: var(--panel);
+	border: 1px solid var(--line);
+	padding: 14px;
+	border-radius: 4px;
+}
+.panel-title { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.panel-title h2 { margin: 0; font-size: 13px; font-weight: 600; }
+#output {
+	display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 70vh;
+	max-height: 82vh;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	gap: 8px;
+	overflow: auto;
+	border: 1px solid var(--line);
+	padding: 14px;
+	border-radius: 3px;
+	scroll-behavior: smooth;
+}
+.line {
+	display: block;
+	width: 100%;
+	min-width: 0;
+	margin: 0;
+	padding: 8px 10px;
+	border-left: 2px solid var(--line);
+	border-radius: 2px;
+	line-height: 1.55;
+	white-space: pre-wrap;
+	overflow-wrap: anywhere;
+	word-break: normal;
+}
+.line.prompt { border-left-color: var(--accent); background: #18211b; color: var(--accent); }
+.line.result { border-left-color: #59655d; color: var(--text); }
+.line.error { border-left-color: var(--error); background: #281918; color: var(--error); }
+form { display: flex; gap: 8px; min-width: 0; }
+input {
+	width: 100%;
+	min-width: 0;
+	background: var(--bg);
+	border: 1px solid var(--line);
+	border-radius: 3px;
+	color: var(--text);
+	padding: 10px;
+	font: inherit;
+}
+button {
+	padding: 0 18px;
+	background: #294533;
+	border: 1px solid #477257;
+	border-radius: 4px;
+	color: #e9fff0;
+	font: inherit;
+	cursor: pointer;
+}
+button:disabled, input:disabled, select:disabled, textarea:disabled { opacity: .55; cursor: not-allowed; }
+.note { margin: 0; min-height: 18px; color: var(--muted); font-size: 12px; }
+@media (max-width: 760px) {
+	main { padding: 14px; }
+	#workspace { min-height: 0; }
+	.panel { min-height: 78vh; }
+	#output { min-height: 65vh; max-height: none; }
+	header { align-items: flex-start; flex-direction: column; }
+	form { flex-direction: column; }
+	button { padding: 11px; }
+}
+</style>
+</head>
+<body>
+<main>
+	<header>
+		<h1>STEAKBOT / DEBUG CONSOLE</h1>
+		<div id="status" class="status">Temps restant __INITIAL_COUNTDOWN__</div>
+	</header>
+	<div id="workspace">
+		<section id="console-page" class="panel" aria-label="Console debug">
+			<section id="output" aria-live="polite">
+				<div class="line result">Console privée. Commandes debug autorisées uniquement; aucune commande système.</div>
+			</section>
+			<form id="form">
+				<input id="command" autocomplete="off" autofocus maxlength="2000" placeholder="runtime" aria-label="Commande debug">
+				<button id="send" type="submit">Exécuter</button>
+			</form>
+		</section>
+	</div>
+	<p class="note">Session Tailscale temporaire. Elle expire automatiquement.</p>
+</main>
+<script>
+const expiresAt = performance.now() + __REMAINING_MS__;
+const output = document.getElementById('output');
+const form = document.getElementById('form');
+const input = document.getElementById('command');
+const button = document.getElementById('send');
+const status = document.getElementById('status');
+const commandHistory = [];
+let busy = false;
+let historyIndex = 0;
+let inputDraft = '';
+
+function line(text, kind) {
+	const item = document.createElement('div');
+	item.className = 'line ' + kind;
+	item.textContent = text;
+	output.appendChild(item);
+	output.scrollTop = output.scrollHeight;
+}
+
+function showPage(pageId) {
+	for (const page of pages) page.classList.toggle('active', page.id === pageId);
+	for (const navButton of navButtons) {
+		const selected = navButton.dataset.page === pageId;
+		navButton.classList.toggle('active', selected);
+		if (selected) navButton.setAttribute('aria-current', 'page');
+		else navButton.removeAttribute('aria-current');
+	}
+}
+
+function updateStatus() {
+	const left = expiresAt - performance.now();
+	if (left <= 0) {
+		status.textContent = 'Session expirée · 00:00';
+		status.classList.add('expired');
+		input.disabled = true;
+		button.disabled = true;
+		return;
+	}
+	const seconds = Math.ceil(left / 1000);
+	const minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
+	const remainder = String(seconds % 60).padStart(2, '0');
+	status.textContent = 'Temps restant ' + minutes + ':' + remainder;
+}
+
+setInterval(updateStatus, 1000);
+updateStatus();
+input.addEventListener('keydown', event => {
+	if (event.key === 'ArrowUp') {
+		if (commandHistory.length === 0) return;
+		event.preventDefault();
+		if (historyIndex === commandHistory.length) inputDraft = input.value;
+		historyIndex = Math.max(0, historyIndex - 1);
+		input.value = commandHistory[historyIndex];
+	} else if (event.key === 'ArrowDown') {
+		if (commandHistory.length === 0 || historyIndex === commandHistory.length) return;
+		event.preventDefault();
+		historyIndex++;
+		input.value = historyIndex === commandHistory.length ? inputDraft : commandHistory[historyIndex];
+	}
+});
+form.addEventListener('submit', async event => {
+	event.preventDefault();
+	if (busy || !input.value.trim() || performance.now() >= expiresAt) return;
+	const command = input.value.trim();
+	if (commandHistory.at(-1) !== command) commandHistory.push(command);
+	historyIndex = commandHistory.length;
+	inputDraft = '';
+	input.value = '';
+	busy = true;
+	button.disabled = true;
+	line('> ' + command, 'prompt');
+	try {
+		const response = await fetch(location.pathname + '/run', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json' },
+			body: JSON.stringify({ command }),
+		});
+		const data = await response.json();
+		if (data.reloadConsole) {
+			line(data.output || 'Console rechargée.', 'result');
+			setTimeout(() => location.reload(), 250);
+			return;
+		}
+		line(data.output || data.error || 'Commande terminée.', data.ok ? 'result' : 'error');
+	} catch (error) {
+		line('Erreur de connexion : ' + error.message, 'error');
+	} finally {
+		busy = false;
+		button.disabled = performance.now() >= expiresAt;
+		input.focus();
+	}
+});
+</script>
+</body>
+</html>
